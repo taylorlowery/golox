@@ -7,6 +7,25 @@ import (
 	"github.com/taylorlowery/lox/token"
 )
 
+var keywords = map[string]token.TokenType{
+	"and":    token.AND,
+	"class":  token.CLASS,
+	"else":   token.ELSE,
+	"false":  token.FALSE,
+	"fun":    token.FUN,
+	"for":    token.FOR,
+	"if":     token.IF,
+	"nil":    token.NIL,
+	"or":     token.OR,
+	"print":  token.PRINT,
+	"return": token.RETURN,
+	"super":  token.SUPER,
+	"this":   token.THIS,
+	"true":   token.TRUE,
+	"var":    token.VAR,
+	"while":  token.WHILE,
+}
+
 type Scanner struct {
 	source  string
 	tokens  []token.Token
@@ -129,8 +148,29 @@ func (s *Scanner) number() {
 	s.addToken(token.NUMBER, value)
 }
 
+func (s *Scanner) identifier() {
+	for isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+
+	value := s.Source()[s.start:s.current]
+	tokenType, ok := keywords[value]
+	if !ok {
+		tokenType = token.IDENTIFIER
+	}
+	s.addToken(tokenType, nil)
+}
+
 func isDigit(b byte) bool {
 	return '0' <= b && b <= '9'
+}
+
+func isAlpha(b byte) bool {
+	return ('a' <= b && b <= 'z') || ('A' <= b && b <= 'Z') || b == '_'
+}
+
+func isAlphaNumeric(b byte) bool {
+	return isAlpha(b) || isDigit(b)
 }
 
 func (s *Scanner) scanToken() {
@@ -197,6 +237,8 @@ func (s *Scanner) scanToken() {
 	default:
 		if isDigit(c) {
 			s.number()
+		} else if isAlpha(c) {
+			s.identifier()
 		} else {
 			golox.Error(s.line, "unexpected character")
 		}

@@ -508,3 +508,173 @@ func TestScanner_Numbers_EdgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestScanner_Keywords_CorrectlyParsed(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		source   string
+		expected token.TokenType
+	}{
+		{"and", "and", token.AND},
+		{"class", "class", token.CLASS},
+		{"else", "else", token.ELSE},
+		{"false", "false", token.FALSE},
+		{"fun", "fun", token.FUN},
+		{"for", "for", token.FOR},
+		{"if", "if", token.IF},
+		{"nil", "nil", token.NIL},
+		{"or", "or", token.OR},
+		{"print", "print", token.PRINT},
+		{"return", "return", token.RETURN},
+		{"super", "super", token.SUPER},
+		{"this", "this", token.THIS},
+		{"true", "true", token.TRUE},
+		{"var", "var", token.VAR},
+		{"while", "while", token.WHILE},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := scanner.NewScanner(tc.source)
+			got := s.ScanTokens()
+
+			// Log tokens for debugging
+			t.Logf("Source: %q", tc.source)
+			for i, token := range got {
+				t.Logf("[%d] %s (literal: %v)", i, token.TokenType.String(), token.Literal)
+			}
+
+			if len(got) != 2 {
+				t.Fatalf("expected 2 tokens (keyword + EOF), got %d", len(got))
+			}
+
+			if got[0].TokenType != tc.expected {
+				t.Errorf("expected token type %s, got %s", tc.expected, got[0].TokenType)
+			}
+
+			if got[1].TokenType != token.EOF {
+				t.Errorf("expected EOF token, got %s", got[1].TokenType)
+			}
+		})
+	}
+}
+
+func TestScanner_Identifiers_vs_Keywords(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name     string
+		source   string
+		expected []token.TokenType
+	}{
+		{
+			name:     "simple identifier",
+			source:   "variable",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+		{
+			name:     "keyword prefix",
+			source:   "classes",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+		{
+			name:     "keyword suffix",
+			source:   "myclass",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+		{
+			name:     "keyword with underscore",
+			source:   "class_name",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+		{
+			name:     "keyword with numbers",
+			source:   "class123",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+		{
+			name:     "mixed case keyword",
+			source:   "Class",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+		{
+			name:     "all caps keyword",
+			source:   "CLASS",
+			expected: []token.TokenType{token.IDENTIFIER, token.EOF},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := scanner.NewScanner(tc.source)
+			got := s.ScanTokens()
+
+			// Log tokens for debugging
+			t.Logf("Source: %q", tc.source)
+			for i, token := range got {
+				t.Logf("[%d] %s (literal: %v)", i, token.TokenType.String(), token.Literal)
+			}
+
+			if len(got) != len(tc.expected) {
+				t.Fatalf("expected %d tokens, got %d", len(tc.expected), len(got))
+			}
+
+			for i, expected := range tc.expected {
+				if got[i].TokenType != expected {
+					t.Errorf("token[%d]: expected %s, got %s", i, expected, got[i].TokenType)
+				}
+			}
+		})
+	}
+}
+
+func TestScanner_Keywords_InContext(t *testing.T) {
+	t.Parallel()
+
+	testCases := []struct {
+		name   string
+		source string
+		output string
+	}{
+		{
+			name:   "if statement",
+			source: "if (true) print false;",
+			output: "IF LEFT_PAREN TRUE RIGHT_PAREN PRINT FALSE SEMICOLON EOF",
+		},
+		{
+			name:   "for loop",
+			source: "for (var i = 0; i < 10; i = i + 1) print i;",
+			output: "FOR LEFT_PAREN VAR IDENTIFIER EQUAL NUMBER SEMICOLON IDENTIFIER LESS NUMBER SEMICOLON IDENTIFIER EQUAL IDENTIFIER PLUS NUMBER RIGHT_PAREN PRINT IDENTIFIER SEMICOLON EOF",
+		},
+		{
+			name:   "class definition",
+			source: "class MyClass { fun method() { return this; } }",
+			output: "CLASS IDENTIFIER LEFT_BRACE FUN IDENTIFIER LEFT_PAREN RIGHT_PAREN LEFT_BRACE RETURN THIS SEMICOLON RIGHT_BRACE RIGHT_BRACE EOF",
+		},
+		{
+			name:   "boolean operations",
+			source: "true and false or nil",
+			output: "TRUE AND FALSE OR NIL EOF",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := scanner.NewScanner(tc.source)
+			got := s.ScanTokens()
+
+			// Log tokens for debugging
+			t.Logf("Source: %q", tc.source)
+			for i, token := range got {
+				t.Logf("[%d] %s", i, token.TokenType.String())
+			}
+
+			tokenTypes := tokenListAsString(got)
+			if tokenTypes != tc.output {
+				t.Errorf("expected token types %q, got %q", tc.output, tokenTypes)
+			}
+		})
+	}
+}
