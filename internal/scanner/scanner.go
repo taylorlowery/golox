@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/taylorlowery/lox/golox"
-	"github.com/taylorlowery/lox/token"
+	"github.com/taylorlowery/lox/internal/token"
 )
 
 var keywords = map[string]token.TokenType{

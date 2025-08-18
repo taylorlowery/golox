@@ -22,7 +22,7 @@ func main() {
 		if err != nil {
 			fmt.Println(err)
 		}
-		if g.HadError {
+		if golox.HadError {
 			os.Exit(exitCode)
 		}
 	} else {

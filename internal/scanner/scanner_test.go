@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/taylorlowery/lox/scanner"
-	"github.com/taylorlowery/lox/token"
+	"github.com/taylorlowery/lox/internal/scanner"
+	"github.com/taylorlowery/lox/internal/token"
 )
 
 func TestScanner_SingleCharacterTokens_CorrectlyScanned(t *testing.T) {

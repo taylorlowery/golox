@@ -3,7 +3,7 @@ package token_test
 import (
 	"testing"
 
-	"github.com/taylorlowery/lox/token"
+	"github.com/taylorlowery/lox/internal/token"
 )
 
 func TestTokenString_OutputsExpectedString(t *testing.T) {
