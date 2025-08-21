@@ -18,10 +18,10 @@ func main() {
 	packageName := "golox"
 
 	typeDefs := []string{
-		"Binary   : left Expr, operator Token, right Expr",
+		"Binary   : left Expr, operator token.Token, right Expr",
 		"Grouping : expression Expr",
 		"Literal  : value any",
-		"Unary    : operator Token, right Expr",
+		"Unary    : operator token.Token, right Expr",
 	}
 
 	err := ast.GenerateAst(outputFile, packageName, typeDefs)

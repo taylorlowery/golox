@@ -15,12 +15,18 @@ func defineType(w io.Writer, structName string, fieldList string) {
 	for field := range strings.SplitSeq(fieldList, ", ") {
 		fmt.Fprintf(w, "\t%s\n", field)
 	}
-	fmt.Fprintf(w, "}")
+	fmt.Fprintf(w, "}\n\n")
+	fmt.Fprintf(w, "func (%c %s) accept(v Visitor[any]) any {\n\treturn v.visit%s(%c)\n}\n", strings.ToLower(structName)[0], structName, structName, strings.ToLower(structName)[0])
 }
 
 func defineAst(w io.Writer, packageName string, interfaceName string, typeDefs []string) {
 	fmt.Fprintf(w, "package %s\n\n", packageName)
-	fmt.Fprintf(w, "type %s interface{}\n\n", interfaceName)
+
+	fmt.Fprintf(w, "import \"github.com/taylorlowery/lox/internal/token\"\n\n")
+
+	defineVisitor(w, typeDefs)
+
+	fmt.Fprintf(w, "type %s interface{\n\taccept(v Visitor[any]) any\n}\n\n", interfaceName)
 
 	for _, typeDef := range typeDefs {
 		parts := strings.Split(typeDef, ":")
@@ -30,6 +36,17 @@ func defineAst(w io.Writer, packageName string, interfaceName string, typeDefs [
 		fmt.Fprintln(w)
 		fmt.Fprintln(w)
 	}
+}
+
+func defineVisitor(w io.Writer, typeDefs []string) {
+	fmt.Fprintf(w, "type Visitor[K any] interface {\n")
+
+	for _, typeDef := range typeDefs {
+		typeName := strings.TrimSpace(strings.Split(typeDef, ":")[0])
+		fmt.Fprintf(w, "\tvisit%s(%c %s) K\n", typeName, strings.ToLower(typeName)[0], typeName)
+	}
+
+	fmt.Fprintf(w, "}\n\n")
 }
 
 func GenerateAst(outputPath string, packageName string, typeDefs []string) error {
