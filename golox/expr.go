@@ -3,10 +3,10 @@ package golox
 import "github.com/taylorlowery/lox/internal/token"
 
 type Visitor[K any] interface {
-	visitBinary(b Binary) K
-	visitGrouping(g Grouping) K
-	visitLiteral(l Literal) K
-	visitUnary(u Unary) K
+	visitBinaryExpr(b *Binary) K
+	visitGroupingExpr(g *Grouping) K
+	visitLiteralExpr(l *Literal) K
+	visitUnaryExpr(u *Unary) K
 }
 
 type Expr interface{
@@ -19,8 +19,8 @@ type Binary struct {
 	right Expr
 }
 
-func (b Binary) accept(v Visitor[any]) any {
-	return v.visitBinary(b)
+func (b *Binary) accept(v Visitor[any]) any {
+	return v.visitBinaryExpr(b)
 }
 
 
@@ -28,8 +28,8 @@ type Grouping struct {
 	expression Expr
 }
 
-func (g Grouping) accept(v Visitor[any]) any {
-	return v.visitGrouping(g)
+func (g *Grouping) accept(v Visitor[any]) any {
+	return v.visitGroupingExpr(g)
 }
 
 
@@ -37,8 +37,8 @@ type Literal struct {
 	value any
 }
 
-func (l Literal) accept(v Visitor[any]) any {
-	return v.visitLiteral(l)
+func (l *Literal) accept(v Visitor[any]) any {
+	return v.visitLiteralExpr(l)
 }
 
 
@@ -47,8 +47,8 @@ type Unary struct {
 	right Expr
 }
 
-func (u Unary) accept(v Visitor[any]) any {
-	return v.visitUnary(u)
+func (u *Unary) accept(v Visitor[any]) any {
+	return v.visitUnaryExpr(u)
 }
 
 

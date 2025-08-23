@@ -14,8 +14,9 @@ func TestDefineType_OutputsExpectedCode(t *testing.T) {
 
 	className := "Example"
 	fieldList := "field1 string, field2 int, field3 OtherType"
+	baseName := "Base"
 
-	defineType(&output, className, fieldList)
+	defineType(&output, className, baseName, fieldList)
 
 	want := `type Example struct {
 	field1 string
@@ -23,10 +24,9 @@ func TestDefineType_OutputsExpectedCode(t *testing.T) {
 	field3 OtherType
 }
 
-func (e *Example)[K any] accept(v Visitor[K]) K {
-	return v.visitExample(e)
+func (e *Example) accept(v Visitor[any]) any {
+	return v.visitExampleBase(e)
 }
-
 `
 	got := output.String()
 
@@ -51,15 +51,17 @@ func TestDefineAst_GeneratesCodeFileWithAllExpectedStructs(t *testing.T) {
 
 	want := `package golox
 
+import "github.com/taylorlowery/lox/internal/token"
+
 type Visitor[K any] interface {
-	visitBinary(b Binary) K
-	visitGrouping(g Grouping) K
-	visitLiteral(l Literal) K
-	visitUnary(u Unary) K
+	visitBinaryExpr(b *Binary) K
+	visitGroupingExpr(g *Grouping) K
+	visitLiteralExpr(l *Literal) K
+	visitUnaryExpr(u *Unary) K
 }
 
-type Expr[K any] interface{
-	accept(v Visitor) K
+type Expr interface{
+	accept(v Visitor[any]) any
 }
 
 type Binary struct {
@@ -68,18 +70,38 @@ type Binary struct {
 	right Expr
 }
 
+func (b *Binary) accept(v Visitor[any]) any {
+	return v.visitBinaryExpr(b)
+}
+
+
 type Grouping struct {
 	expression Expr
 }
+
+func (g *Grouping) accept(v Visitor[any]) any {
+	return v.visitGroupingExpr(g)
+}
+
 
 type Literal struct {
 	value any
 }
 
+func (l *Literal) accept(v Visitor[any]) any {
+	return v.visitLiteralExpr(l)
+}
+
+
 type Unary struct {
 	operator token.Token
 	right Expr
 }
+
+func (u *Unary) accept(v Visitor[any]) any {
+	return v.visitUnaryExpr(u)
+}
+
 
 `
 	got := output.String()
@@ -102,13 +124,13 @@ func TestDefineVisitor(t *testing.T) {
 		"Unary    : operator token.Token, right Expr",
 	}
 
-	defineVisitor(&output, typeDefs)
+	defineVisitor(&output, "Expr", typeDefs)
 
 	want := `type Visitor[K any] interface {
-	visitBinary(b Binary) K
-	visitGrouping(g Grouping) K
-	visitLiteral(l Literal) K
-	visitUnary(u Unary) K
+	visitBinaryExpr(b *Binary) K
+	visitGroupingExpr(g *Grouping) K
+	visitLiteralExpr(l *Literal) K
+	visitUnaryExpr(u *Unary) K
 }
 
 `
