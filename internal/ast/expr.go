@@ -1,4 +1,4 @@
-package golox
+package ast
 
 import "github.com/taylorlowery/lox/internal/token"
 

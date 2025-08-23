@@ -15,7 +15,7 @@ func main() {
 
 	outputFile := os.Args[1]
 
-	packageName := "golox"
+	packageName := "ast"
 
 	typeDefs := []string{
 		"Binary   : left Expr, operator token.Token, right Expr",
