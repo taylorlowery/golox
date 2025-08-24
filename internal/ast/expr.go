@@ -9,46 +9,41 @@ type Visitor[K any] interface {
 	visitUnaryExpr(u *Unary) K
 }
 
-type Expr interface{
+type Expr interface {
 	accept(v Visitor[any]) any
 }
 
 type Binary struct {
-	left Expr
-	operator token.Token
-	right Expr
+	Left     Expr
+	Operator token.Token
+	Right    Expr
 }
 
 func (b *Binary) accept(v Visitor[any]) any {
 	return v.visitBinaryExpr(b)
 }
 
-
 type Grouping struct {
-	expression Expr
+	Expression Expr
 }
 
 func (g *Grouping) accept(v Visitor[any]) any {
 	return v.visitGroupingExpr(g)
 }
 
-
 type Literal struct {
-	value any
+	Value any
 }
 
 func (l *Literal) accept(v Visitor[any]) any {
 	return v.visitLiteralExpr(l)
 }
 
-
 type Unary struct {
-	operator token.Token
-	right Expr
+	Operator token.Token
+	Right    Expr
 }
 
 func (u *Unary) accept(v Visitor[any]) any {
 	return v.visitUnaryExpr(u)
 }
-
-

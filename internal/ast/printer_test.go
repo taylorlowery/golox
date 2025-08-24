@@ -13,26 +13,26 @@ func TestPrintAst_PrintsExpected(t *testing.T) {
 	// TODO: implement test once printer is complete
 	want := "(* (- 123) (group 45.67))"
 	var expr = Binary{
-		left: &Unary{
-			operator: token.Token{
+		Left: &Unary{
+			Operator: token.Token{
 				TokenType: token.MINUS,
 				Lexeme:    "-",
 				Literal:   nil,
 				Line:      1,
 			},
-			right: &Literal{
-				value: 123,
+			Right: &Literal{
+				Value: 123,
 			},
 		},
-		operator: token.Token{
+		Operator: token.Token{
 			TokenType: token.STAR,
 			Lexeme:    "*",
 			Literal:   nil,
 			Line:      1,
 		},
-		right: &Grouping{
-			expression: &Literal{
-				value: 45.67,
+		Right: &Grouping{
+			Expression: &Literal{
+				Value: 45.67,
 			},
 		},
 	}

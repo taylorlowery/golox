@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"io"
 	"os"
-)
 
-var HadError bool = false
+	"github.com/taylorlowery/lox/internal/scanner"
+	"github.com/taylorlowery/lox/internal/token"
+)
 
 type Golox struct {
 	stdin  io.Reader
 	stdout io.Writer
 	stderr io.Writer
+	hadErr bool
 }
 
 type option func(*Golox) error
@@ -70,11 +72,16 @@ func WithStderr(w io.Writer) option {
 }
 
 func (g Golox) run(source string) {
-	// scanner := new Scanner(source)
-	// tokens := scanner.ScanTokens()
+	scanner := scanner.NewScanner(source)
+	// tokens, err := scanner.ScanTokens()
+	_, err := scanner.ScanTokens()
+	if err != nil {
+		g.Error(err.Line, err.Message)
+		return
+	}
 
-	// for token := range tokens {
-	// 	fmt.Fprint(g.output, token)
+	// for _, token := range tokens {
+	// 	fmt.Fprintln(g.stdout, token.Lexeme)
 	// }
 	fmt.Fprintln(g.stdout, source)
 }
@@ -105,16 +112,24 @@ func (g Golox) RunPrompt() error {
 			continue
 		}
 		g.run(line)
-		HadError = false
+		g.hadErr = false
 	}
 	return bufioScanner.Err()
 }
 
-func Error(line int, message string) {
-	report(line, "", message)
+func (g Golox) Error(line int, message string) {
+	g.report(line, "", message)
 }
 
-func report(line int, where string, message string) {
+func (g Golox) TokenError(t token.Token, message string) {
+	if t.TokenType == token.EOF {
+		g.report(t.Line, " at end", message)
+	} else {
+		g.report(t.Line, " at "+t.Lexeme, message)
+	}
+}
+
+func (g Golox) report(line int, where string, message string) {
 	fmt.Fprintf(os.Stderr, "[line: %d] Error %s: %s\n", line, where, message)
-	HadError = true
+	g.hadErr = true
 }

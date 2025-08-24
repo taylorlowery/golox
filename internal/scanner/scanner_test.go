@@ -82,7 +82,10 @@ func TestScanner_SingleCharacterTokens_CorrectlyScanned(t *testing.T) {
 			if len(s.Tokens()) > 0 {
 				t.Fatalf("expected new scanner to have empty token list, got %#v", s)
 			}
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
 			for i, token := range got {
@@ -178,7 +181,10 @@ func TestScanner_EqualSignTokens_CorrectlyScanned(t *testing.T) {
 			if len(s.Tokens()) > 0 {
 				t.Fatalf("expected new scanner to have empty token list, got %#v", s)
 			}
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
 			for i, token := range got {
@@ -218,7 +224,10 @@ func TestScanner_SlashTokens_CorrectlyScanned(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
 			for i, token := range got {
@@ -277,7 +286,10 @@ func TestScanner_Whitespace_IgnoredCorrectly(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
 			for i, token := range got {
@@ -329,7 +341,10 @@ func TestScanner_NewlineHandling_CorrectlyTracksLines(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
 			for i, token := range got {
@@ -426,8 +441,10 @@ func TestScanner_Numbers_CorrectlyParsed(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
-
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
 			for i, token := range got {
@@ -491,7 +508,10 @@ func TestScanner_Numbers_EdgeCases(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
@@ -538,7 +558,10 @@ func TestScanner_Keywords_CorrectlyParsed(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
@@ -609,7 +632,10 @@ func TestScanner_Identifiers_vs_Keywords(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)
@@ -663,7 +689,10 @@ func TestScanner_Keywords_InContext(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := scanner.NewScanner(tc.source)
-			got := s.ScanTokens()
+			got, err := s.ScanTokens()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			// Log tokens for debugging
 			t.Logf("Source: %q", tc.source)

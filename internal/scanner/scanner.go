@@ -3,7 +3,6 @@ package scanner
 import (
 	"strconv"
 
-	"github.com/taylorlowery/lox/golox"
 	"github.com/taylorlowery/lox/internal/token"
 )
 
@@ -24,6 +23,15 @@ var keywords = map[string]token.TokenType{
 	"true":   token.TRUE,
 	"var":    token.VAR,
 	"while":  token.WHILE,
+}
+
+type ScannerError struct {
+	Line    int
+	Message string
+}
+
+func (e ScannerError) Error() string {
+	return e.Message
 }
 
 type Scanner struct {
@@ -54,14 +62,17 @@ func (s Scanner) isAtEnd() bool {
 	return s.current >= len(s.source)
 }
 
-func (s *Scanner) ScanTokens() []token.Token {
+func (s *Scanner) ScanTokens() ([]token.Token, *ScannerError) {
 	for !s.isAtEnd() {
 		s.start = s.current
-		s.scanToken()
+		err := s.scanToken()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	s.tokens = append(s.tokens, token.Token{TokenType: token.EOF, Lexeme: "", Literal: nil, Line: s.line})
-	return s.tokens
+	return s.tokens, nil
 }
 
 func (s *Scanner) addToken(t token.TokenType, literal any) {
@@ -90,7 +101,7 @@ func (s *Scanner) match(expected byte) bool {
 
 // string consumes the scanner source from one double quote to another
 // TODO: support escape characters
-func (s *Scanner) string() {
+func (s *Scanner) string() *ScannerError {
 	for s.peek() != '"' && !s.isAtEnd() {
 		if s.peek() == '\n' {
 			s.line++
@@ -99,8 +110,10 @@ func (s *Scanner) string() {
 	}
 
 	if s.isAtEnd() {
-		golox.Error(s.line, "unterminated string")
-		return
+		return &ScannerError{
+			Line:    s.line,
+			Message: "unterminated string",
+		}
 	}
 
 	s.advance()
@@ -108,6 +121,7 @@ func (s *Scanner) string() {
 	// gather string value without the quotes
 	value := s.Source()[s.start+1 : s.current-1]
 	s.addToken(token.STRING, value)
+	return nil
 }
 
 func (s Scanner) peek() byte {
@@ -124,7 +138,7 @@ func (s Scanner) peekNext() byte {
 	return s.source[s.current+1]
 }
 
-func (s *Scanner) number() {
+func (s *Scanner) number() *ScannerError {
 	for isDigit(s.peek()) {
 		s.advance()
 	}
@@ -141,11 +155,14 @@ func (s *Scanner) number() {
 	numString := s.Source()[s.start:s.current]
 	value, err := strconv.ParseFloat(numString, 64)
 	if err != nil {
-		golox.Error(s.line, "invalid number format")
-		return
+		return &ScannerError{
+			Line:    s.line,
+			Message: "invalid number format",
+		}
 	}
 
 	s.addToken(token.NUMBER, value)
+	return nil
 }
 
 func (s *Scanner) identifier() {
@@ -173,7 +190,7 @@ func isAlphaNumeric(b byte) bool {
 	return isAlpha(b) || isDigit(b)
 }
 
-func (s *Scanner) scanToken() {
+func (s *Scanner) scanToken() *ScannerError {
 	var c byte = s.advance()
 	switch c {
 	case '(':
@@ -236,11 +253,19 @@ func (s *Scanner) scanToken() {
 		s.string()
 	default:
 		if isDigit(c) {
-			s.number()
+			err := s.number()
+			if err != nil {
+				return err
+			}
 		} else if isAlpha(c) {
 			s.identifier()
 		} else {
-			golox.Error(s.line, "unexpected character")
+			return &ScannerError{
+				Line:    s.line,
+				Message: "unexpected characer",
+			}
 		}
 	}
+
+	return nil
 }
