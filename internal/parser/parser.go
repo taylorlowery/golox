@@ -26,6 +26,14 @@ type Parser struct {
 	current int
 }
 
+// NewParser creates a new Parser instance with the given tokens
+func NewParser(tokens []token.Token) *Parser {
+	return &Parser{
+		tokens:  tokens,
+		current: 0,
+	}
+}
+
 func (p *Parser) expression() ast.Expr {
 	return p.equality()
 }
@@ -186,4 +194,21 @@ func (p *Parser) parseError(t token.Token, message string) error {
 	// figure out what kind of panic they're talking about in consume()
 	// golox.TokenError(t, message)
 	return errors.New("Parser error: " + message)
+}
+
+func (p *Parser) synchronize() {
+	p.advance()
+
+	for !p.isAtEnd() {
+		if p.previous().TokenType == token.SEMICOLON {
+			return
+		}
+
+		switch p.peek().TokenType {
+		case token.CLASS, token.FUN, token.VAR, token.FOR, token.IF, token.WHILE, token.PRINT, token.RETURN:
+			return
+		}
+
+		p.advance()
+	}
 }
