@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/taylorlowery/lox/internal/ast"
+	"github.com/taylorlowery/lox/internal/parser"
 	"github.com/taylorlowery/lox/internal/scanner"
 	"github.com/taylorlowery/lox/internal/token"
 )
@@ -73,17 +75,24 @@ func WithStderr(w io.Writer) option {
 
 func (g Golox) run(source string) {
 	scanner := scanner.NewScanner(source)
-	// tokens, err := scanner.ScanTokens()
-	_, err := scanner.ScanTokens()
+	tokens, err := scanner.ScanTokens()
 	if err != nil {
 		g.Error(err.Line, err.Message)
 		return
 	}
 
-	// for _, token := range tokens {
-	// 	fmt.Fprintln(g.stdout, token.Lexeme)
-	// }
-	fmt.Fprintln(g.stdout, source)
+	p := parser.NewParser(tokens)
+	expr, parseErr := p.Parse()
+	if parseErr != nil {
+		g.Error(0, parseErr.Error())
+	}
+
+	astPrinter, err := ast.NewAstPrinter([])
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(astPrinter.PrintAst(expr))
 }
 
 // RunFile reads a file at a given path,

@@ -178,7 +178,7 @@ func (p *Parser) primary() ast.Expr {
 		}
 	}
 
-	return nil
+	panic(p.parseError(p.peek(), "expect expression"))
 }
 
 func (p *Parser) consume(tokenType token.TokenType, message string) token.Token {
@@ -211,4 +211,8 @@ func (p *Parser) synchronize() {
 
 		p.advance()
 	}
+}
+
+func (p *Parser) Parse() (ast.Expr, error) {
+	return p.expression(), nil
 }
