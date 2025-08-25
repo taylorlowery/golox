@@ -87,9 +87,9 @@ func (g Golox) run(source string) {
 		g.Error(0, parseErr.Error())
 	}
 
-	astPrinter, err := ast.NewAstPrinter([])
-	if err != nil {
-		panic(err)
+	astPrinter, printerError := ast.NewAstPrinter()
+	if printerError != nil {
+		panic(printerError)
 	}
 
 	fmt.Println(astPrinter.PrintAst(expr))
